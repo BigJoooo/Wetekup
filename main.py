@@ -5,9 +5,15 @@ import os
 app = Flask(__name__)
 
 # 🔑 Variables d'environnement (sécurisées via Render)
-AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY")
-AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
-NOTION_API_KEY = os.getenv("NOTION_API_KEY")
+AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY", "")
+AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID", "")
+NOTION_API_KEY = os.getenv("NOTION_API_KEY", "")
+
+# 🔧 Vérification des variables d'environnement
+if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+    print("⚠️ Erreur: Les variables AIRTABLE_API_KEY ou AIRTABLE_BASE_ID ne sont pas définies.")
+if not NOTION_API_KEY:
+    print("⚠️ Erreur: La variable NOTION_API_KEY n'est pas définie.")
 
 def get_airtable_tables():
     """Récupère la liste de toutes les tables d'Airtable"""
@@ -59,10 +65,17 @@ def notion():
 
 @app.route("/all_data", methods=["GET"])
 def all_data():
+    print("✅ Route /all_data appelée")  # Debug dans Render logs
     return jsonify({
         "airtable": get_airtable_data(),
         "notion": get_notion_databases()
     })
 
+@app.route("/routes", methods=["GET"])
+def show_routes():
+    """Affiche toutes les routes disponibles pour debug"""
+    return jsonify([rule.rule for rule in app.url_map.iter_rules()])
+
 if __name__ == "__main__":
+    print("💪 API en cours d'exécution sur Render...")
     app.run(host="0.0.0.0", port=8080)
